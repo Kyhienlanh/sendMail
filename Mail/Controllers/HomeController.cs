@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Mail;
 using Mail.Models;
 using System.IO;
+using System.Reflection;
 
 namespace Mail.Controllers
 {
@@ -21,14 +22,15 @@ namespace Mail.Controllers
             return View();
         }
         [AcceptVerbs(HttpVerbs.Post)]
-        public ActionResult SendEmail(int id)
+        public ActionResult SendEmail(HttpPostedFileBase file)
         {
             try
             {
-                String MailTo = Request.Form.Get("mail");
-                String content = Request.Form.Get("content");
-                String subject = Request.Form.Get("subject");
-                String from = Request.Form.Get("from");
+                string MailTo = Request.Form.Get("mail");
+                string content = Request.Form.Get("content");
+                string subject = Request.Form.Get("subject");
+                string from = Request.Form.Get("from");
+
                 var fromAddress = new MailAddress("kyhienlanh1@gmail.com", from);
                 var fromPassword = "gtzn icxt hcii qxnj";
                 var toAddress = new MailAddress(MailTo);
@@ -45,23 +47,45 @@ namespace Mail.Controllers
                     Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
                 };
 
-                using (var message = new MailMessage(fromAddress, toAddress)
+                Attachment attachment = null;
+
+                // Check if a file was uploaded
+                if (file != null && file.ContentLength > 0)
                 {
-                    Subject = subject,
-                    Body = body
-                })
+                    string fileName = Path.GetFileName(file.FileName);
+                    string filePath = Path.Combine(Server.MapPath("~/UploadedFiles"), fileName);
+                    file.SaveAs(filePath);
+
+                    // Create an attachment object for the uploaded file
+                    attachment = new Attachment(filePath);
+                }
+
+                using (var message = new MailMessage(fromAddress, toAddress))
+                {
+                    message.Subject = subject;
+                    message.Body = body;
+
+                    // Attach the file if it exists
+                    if (attachment != null)
+                    {
+                        message.Attachments.Add(attachment);
+                    }
 
                     smtp.Send(message);
-                ViewBag.error = "successful";
+                }
+
+                ViewBag.Message = "Email sent successfully ";
+                return View();
             }
             catch (Exception ex)
             {
-                ViewBag.error = "ERROR" + ex;
+                ViewBag.Message = "Error sending email: " + ex.Message;
+                return View();
             }
-
-            return View();
         }
-       
+
+
+
         public ActionResult About()
         {
             ViewBag.Message = "Your application description page.";

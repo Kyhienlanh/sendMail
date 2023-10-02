@@ -45,7 +45,7 @@
 </style>
 
 <h2 style="text-align:center">Send Email</h2>
-
+<!--
 <div class="form-container">
     @using (Html.BeginForm())
     {
@@ -57,9 +57,28 @@
         <br />
         <p>Body</p> @Html.TextBox("content", null, new { @class = "form-control" })
         <br />
-
         <input type="submit" id="bntsubmit" value="Send" class="btn btn-primary" />
         <br />
         <span class="error-message">@ViewBag.Error</span>
+    }
+</div>
+    -->
+<div class="form-container">
+    @using (Html.BeginForm("SendEmail", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        <h2>Send Email</h2>
+        <p>From</p> @Html.TextBox("from", null, new { @class = "form-control" })
+        <br />
+        <p>To</p> @Html.TextBox("mail", null, new { @class = "form-control" })
+        <br />
+        <p>Subject</p> @Html.TextBox("subject", null, new { @class = "form-control" })
+        <br />
+        <p>Body</p> @Html.TextBox("content", null, new { @class = "form-control" })
+        <br />
+        <p>Attachment</p> @Html.TextBox("file", "", new { type = "file" }) <br />
+        <br />
+        <input type="submit" value="Send" />
+        <br />
+        <span class="error-message">@ViewBag.Message</span>
     }
 </div>
